@@ -15,9 +15,19 @@ class _AddProductPageState extends State<AddProductPage> {
   final nameController = TextEditingController();
   final descriptionController = TextEditingController();
   final priceController = TextEditingController();
+  String? selectedCategory;
   bool isLoading = false;
   File? _image;
   final picker = ImagePicker();
+
+  // List of product categories
+  final List<String> categories = [
+    'All',
+    'Bed',
+    'Tables',
+    'Chairs',
+    'Sofa',
+  ];
 
   Future<void> pickImage() async {
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
@@ -35,6 +45,10 @@ class _AddProductPageState extends State<AddProductPage> {
     if (formKey.currentState!.validate()) {
       if (_image == null) {
         Fluttertoast.showToast(msg: 'Please select an image.');
+        return;
+      }
+      if (selectedCategory == null) {
+        Fluttertoast.showToast(msg: 'Please select a category.');
         return;
       }
 
@@ -56,6 +70,7 @@ class _AddProductPageState extends State<AddProductPage> {
           'name': nameController.text.trim(),
           'description': descriptionController.text.trim(),
           'price': priceController.text.trim(),
+          'category': selectedCategory,
           'imageUrl': imageUrl,
         });
 
@@ -70,6 +85,7 @@ class _AddProductPageState extends State<AddProductPage> {
         priceController.clear();
         setState(() {
           _image = null;
+          selectedCategory = null;
         });
       } catch (e) {
         Fluttertoast.showToast(msg: 'Error adding product: $e');
@@ -142,6 +158,32 @@ class _AddProductPageState extends State<AddProductPage> {
                         }
                         return null;
                       },
+                    ),
+                    SizedBox(height: 16),
+                    // Dropdown for product category
+                    DropdownButtonFormField<String>(
+                      value: selectedCategory,
+                      hint: Text('Select Category'),
+                      items: categories.map((category) {
+                        return DropdownMenuItem<String>(
+                          value: category,
+                          child: Text(category),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          selectedCategory = value;
+                        });
+                      },
+                      validator: (value) {
+                        if (value == null) {
+                          return 'Please select a category';
+                        }
+                        return null;
+                      },
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                      ),
                     ),
                     SizedBox(height: 16),
                     TextFormField(
